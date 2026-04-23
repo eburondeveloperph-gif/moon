@@ -22,7 +22,7 @@ import cn from 'classnames';
 
 import { memo, ReactNode, useEffect, useRef, useState } from 'react';
 import { AudioRecorder } from '../../../lib/audio-recorder';
-import { useSettings, useTools, useLogStore } from '@/lib/state';
+import { useLogStore, useUI } from '@/lib/state';
 import { db } from '../../../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -36,8 +36,30 @@ function ControlTray({ children }: ControlTrayProps) {
   const [audioRecorder] = useState(() => new AudioRecorder());
   const [muted, setMuted] = useState(false);
   const connectButtonRef = useRef<HTMLButtonElement>(null);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
+  const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
+  const cameraCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const cameraIntervalRef = useRef<number | null>(null);
+  const connectedRef = useRef(false);
 
-  const { client, connected, connect, disconnect } = useLiveAPIContext();
+  const {
+    client,
+    connected,
+    connect,
+    disconnect,
+    speakerMuted,
+    setSpeakerMuted,
+  } = useLiveAPIContext();
+  const {
+    cameraEnabled,
+    setCameraEnabled,
+    setCameraPreviewUrl,
+  } = useUI();
+  const setMicLevel = useUI.getState().setMicLevel;
+  const clientRef = useRef(client);
+
+  connectedRef.current = connected;
+  clientRef.current = client;
 
   useEffect(() => {
     // FIX: Cannot find name 'connectButton'. Did you mean 'connectButtonRef'?
@@ -50,8 +72,15 @@ function ControlTray({ children }: ControlTrayProps) {
   useEffect(() => {
     if (!connected) {
       setMuted(false);
+      setMicLevel(0);
     }
-  }, [connected]);
+  }, [connected, setMicLevel]);
+
+  useEffect(() => {
+    if (!cameraEnabled) {
+      setCameraPreviewUrl(null);
+    }
+  }, [cameraEnabled, setCameraPreviewUrl]);
 
   const dgClient = useRef<any>(null);
   const dgConnection = useRef<any>(null);
@@ -75,6 +104,10 @@ function ControlTray({ children }: ControlTrayProps) {
         }
         dgConnection.current.send(bytes);
       }
+    };
+
+    const onVolume = (volume: number) => {
+      setMicLevel(volume);
     };
 
     const setupDeepgram = async () => {
@@ -123,9 +156,11 @@ function ControlTray({ children }: ControlTrayProps) {
     if (connected && !muted && audioRecorder) {
       setupDeepgram();
       audioRecorder.on('data', onData);
+      audioRecorder.on('volume', onVolume);
       audioRecorder.start();
     } else {
       audioRecorder.stop();
+      setMicLevel(0);
       if (dgConnection.current) {
         if (dgConnection.current.readyState === WebSocket.OPEN) {
           dgConnection.current.close();
@@ -135,6 +170,8 @@ function ControlTray({ children }: ControlTrayProps) {
     }
     return () => {
       audioRecorder.off('data', onData);
+      audioRecorder.off('volume', onVolume);
+      setMicLevel(0);
       if (dgConnection.current) {
         if (dgConnection.current.readyState === WebSocket.OPEN) {
           dgConnection.current.close();
@@ -142,7 +179,104 @@ function ControlTray({ children }: ControlTrayProps) {
         dgConnection.current = null;
       }
     };
-  }, [connected, client, muted, audioRecorder]);
+  }, [connected, client, muted, audioRecorder, setMicLevel]);
+
+  useEffect(() => {
+    let disposed = false;
+
+    const stopCamera = () => {
+      if (cameraIntervalRef.current) {
+        window.clearInterval(cameraIntervalRef.current);
+        cameraIntervalRef.current = null;
+      }
+      if (cameraVideoRef.current) {
+        cameraVideoRef.current.pause();
+        cameraVideoRef.current.srcObject = null;
+        cameraVideoRef.current = null;
+      }
+      if (cameraStreamRef.current) {
+        cameraStreamRef.current.getTracks().forEach(track => track.stop());
+        cameraStreamRef.current = null;
+      }
+      setCameraPreviewUrl(null);
+    };
+
+    if (!cameraEnabled) {
+      stopCamera();
+      return;
+    }
+
+    const startCamera = async () => {
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error('Camera access is not available in this browser.');
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            facingMode: 'user',
+            width: { ideal: 640 },
+            height: { ideal: 360 },
+          },
+        });
+
+        if (disposed) {
+          stream.getTracks().forEach(track => track.stop());
+          return;
+        }
+
+        const video = document.createElement('video');
+        video.autoplay = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.srcObject = stream;
+        await video.play();
+
+        cameraStreamRef.current = stream;
+        cameraVideoRef.current = video;
+        cameraCanvasRef.current = cameraCanvasRef.current ?? document.createElement('canvas');
+
+        cameraIntervalRef.current = window.setInterval(() => {
+          const liveVideo = cameraVideoRef.current;
+          const canvas = cameraCanvasRef.current;
+          if (!liveVideo || !canvas || liveVideo.readyState < 2) return;
+
+          const width = Math.min(liveVideo.videoWidth || 640, 640);
+          const aspectRatio = (liveVideo.videoHeight || 360) / (liveVideo.videoWidth || 640);
+          const height = Math.max(180, Math.round(width * aspectRatio));
+          const context = canvas.getContext('2d');
+          if (!context) return;
+
+          canvas.width = width;
+          canvas.height = height;
+          context.drawImage(liveVideo, 0, 0, width, height);
+
+          const previewUrl = canvas.toDataURL('image/jpeg', 0.72);
+          setCameraPreviewUrl(previewUrl);
+
+          if (connectedRef.current) {
+            clientRef.current.sendRealtimeInput([
+              {
+                mimeType: 'image/jpeg',
+                data: previewUrl.split(',')[1],
+              },
+            ]);
+          }
+        }, 900);
+      } catch (error) {
+        console.error('Error starting camera preview:', error);
+        setCameraEnabled(false);
+      }
+    };
+
+    startCamera();
+
+    return () => {
+      disposed = true;
+      stopCamera();
+    };
+  }, [cameraEnabled, setCameraEnabled, setCameraPreviewUrl]);
 
   const handleMicClick = () => {
     if (connected) {
@@ -152,37 +286,6 @@ function ControlTray({ children }: ControlTrayProps) {
     }
   };
 
-  const handleExportLogs = () => {
-    const { systemPrompt, model } = useSettings.getState();
-    const { tools } = useTools.getState();
-    const { turns } = useLogStore.getState();
-
-    const logData = {
-      configuration: {
-        model,
-        systemPrompt,
-      },
-      tools,
-      conversation: turns.map(turn => ({
-        ...turn,
-        // Convert Date object to ISO string for JSON serialization
-        timestamp: turn.timestamp.toISOString(),
-      })),
-    };
-
-    const jsonString = JSON.stringify(logData, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    a.href = url;
-    a.download = `live-api-logs-${timestamp}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
   const micButtonTitle = connected
     ? muted
       ? 'Unmute microphone'
@@ -190,6 +293,8 @@ function ControlTray({ children }: ControlTrayProps) {
     : 'Connect and start microphone';
 
   const connectButtonTitle = connected ? 'Stop streaming' : 'Start streaming';
+  const speakerButtonTitle = speakerMuted ? 'Unmute speaker output' : 'Mute speaker output';
+  const cameraButtonTitle = cameraEnabled ? 'Stop camera' : 'Start camera';
 
   return (
     <section className="control-tray">
@@ -207,11 +312,23 @@ function ControlTray({ children }: ControlTrayProps) {
         </button>
         <button
           className={cn('action-button')}
-          onClick={handleExportLogs}
-          aria-label="Export Logs"
-          title="Export session logs"
+          onClick={() => setSpeakerMuted(!speakerMuted)}
+          aria-label="Speaker Output"
+          title={speakerButtonTitle}
         >
-          <span className="material-symbols-outlined">download</span>
+          <span className="material-symbols-outlined">
+            {speakerMuted ? 'volume_off' : 'volume_up'}
+          </span>
+        </button>
+        <button
+          className={cn('action-button', { active: cameraEnabled })}
+          onClick={() => setCameraEnabled(!cameraEnabled)}
+          aria-label="Camera"
+          title={cameraButtonTitle}
+        >
+          <span className="material-symbols-outlined">
+            {cameraEnabled ? 'videocam' : 'videocam_off'}
+          </span>
         </button>
         <button
           className={cn('action-button')}

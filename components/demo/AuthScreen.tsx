@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, signInWithGoogle } from '../../lib/firebase';
+import './AuthScreen.css';
 
 interface AuthScreenProps {
   children: React.ReactNode;
@@ -122,7 +123,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ children }) => {
         <div className="auth-preview-content">
           <div className="auth-preview-group">
             <label className="auth-preview-label">Persona Template</label>
-            <div className="auth-preview-select">Customer Support</div>
+            <div className="auth-preview-select">Beatrice</div>
           </div>
 
           <div className="auth-preview-group">
@@ -135,8 +136,8 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ children }) => {
           <div className="auth-preview-group">
             <label className="auth-preview-label">Presets</label>
             <div className="auth-preview-chips">
-              <span className="auth-preview-chip">Friendly &amp; Concise</span>
-              <span className="auth-preview-chip">Technical Support</span>
+              <span className="auth-preview-chip">Executive Presence</span>
+              <span className="auth-preview-chip">Warm &amp; Loyal</span>
             </div>
           </div>
         </div>
@@ -147,7 +148,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ children }) => {
               <span className="material-symbols-outlined">mic</span>
             </button>
             <button className="auth-preview-icon-button" type="button" tabIndex={-1}>
-              <span className="material-symbols-outlined">download</span>
+              <span className="material-symbols-outlined">volume_up</span>
             </button>
             <button className="auth-preview-icon-button" type="button" tabIndex={-1}>
               <span className="material-symbols-outlined">refresh</span>

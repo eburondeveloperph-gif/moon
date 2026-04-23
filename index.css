@@ -720,6 +720,7 @@ form button:first-of-type {
   border: 1px solid var(--border-glass);
   border-radius: 16px;
   padding: 12px;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
@@ -1107,18 +1108,7 @@ form button:first-of-type {
 .grounding-chunks a:hover {
   text-decoration: underline;
 }
-/* Transcription & Flow */
-.transcription-container {
-  flex: 1;
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding-bottom: 120px;
-  position: relative;
-}
+/* Transcription & Flow — Consolidated below in the main layout section */
 
 .transcription-view {
   width: 100%;
@@ -1305,8 +1295,8 @@ button {
 .glass {
   background: rgba(20, 21, 25, 0.42);
   border: 1px solid var(--border-subtle);
-  backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
 }
 
 .App {
@@ -1315,16 +1305,27 @@ button {
 
 .streaming-console {
   min-height: 100vh;
-  padding-right: var(--sidebar-width);
+  transition: padding-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background:
     radial-gradient(circle at left top, rgba(79, 70, 229, 0.14), transparent 30%),
     radial-gradient(circle at 75% 80%, rgba(14, 165, 233, 0.1), transparent 22%),
     var(--bg-base);
 }
 
+body:has(.sidebar.open) .streaming-console {
+  padding-right: var(--sidebar-width);
+}
+
+@media (max-width: 1024px) {
+  body:has(.sidebar.open) .streaming-console {
+    padding-right: 0;
+  }
+}
+
 .main-app-area {
   position: relative;
   padding: 120px 32px 40px;
+  min-height: 100vh;
 }
 
 header {
@@ -1357,8 +1358,8 @@ body:has(.sidebar.open) header {
   background: rgba(20, 21, 25, 0.46);
   padding: 10px 14px;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
 }
 
 .header-brand-dot {
@@ -1432,8 +1433,8 @@ body:has(.sidebar.open) header {
   background: var(--bg-panel);
   box-shadow: -24px 0 60px rgba(0, 0, 0, 0.35);
   transition: transform 0.3s ease;
-  backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(30px);
 }
 
 .sidebar.open {
@@ -1688,23 +1689,140 @@ body:has(.sidebar.open) header {
 }
 
 .transcription-container {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  gap: 16px;
   max-width: 980px;
-  padding-bottom: 0;
+  height: calc(100vh - 40px);
+  padding-bottom: 120px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.transcription-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-radius: 20px;
+  padding: 18px 20px;
+}
+
+.transcription-toolbar-copy {
+  min-width: 0;
+}
+
+.transcription-toolbar-label {
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.transcription-toolbar h2 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.transcription-status-pill,
+.transcription-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.transcription-status-pill.connected,
+.transcription-live-pill {
+  color: var(--text-primary);
+}
+
+.transcription-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+}
+
+.transcription-status-pill.connected .transcription-status-dot,
+.transcription-live-pill::before {
+  background: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.transcription-live-pill::before {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  content: '';
+}
+
+.transcription-live-strip {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 14px 16px;
+  color: var(--text-secondary);
+}
+
+.transcription-live-strip .material-symbols-outlined {
+  color: var(--text-primary);
+}
+
+.transcription-live-strip p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  line-height: 1.5;
 }
 
 .transcription-view {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
   gap: 22px;
-  padding: 0 16px 120px;
-  mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+  overflow-y: auto;
+  padding: 4px 16px 120px;
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
 }
 
 .transcription-entry {
   max-width: min(720px, 85%);
 }
 
-.transcription-header {
+.transcription-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 10px;
+}
+
+.transcription-header {
+  margin-bottom: 0;
   opacity: 0.55;
 }
 
@@ -1738,7 +1856,13 @@ body:has(.sidebar.open) header {
 }
 
 .empty-state-message {
+  flex: 1;
+  min-height: 0;
   gap: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 32px;
 }
 
 .pulsing-orb {
@@ -1776,8 +1900,8 @@ body:has(.sidebar.open) header {
   border: 1px solid var(--border-subtle);
   background: rgba(20, 21, 25, 0.88);
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
 }
 
 .task-result-overlay {
@@ -1871,6 +1995,10 @@ body:has(.sidebar.open) header {
     padding: 104px 20px 32px;
   }
 
+  .transcription-container {
+    height: calc(100vh - 136px);
+  }
+
   .sidebar {
     width: min(380px, 100vw);
   }
@@ -1895,6 +2023,20 @@ body:has(.sidebar.open) header {
     padding: 88px 12px 24px;
   }
 
+  .transcription-container {
+    gap: 12px;
+    height: calc(100vh - 112px);
+  }
+
+  .transcription-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .transcription-toolbar h2 {
+    font-size: 18px;
+  }
+
   .transcription-view {
     padding: 0 4px 110px;
   }
@@ -1912,5 +2054,496 @@ body:has(.sidebar.open) header {
   .sidebar-header {
     padding-left: 20px;
     padding-right: 20px;
+  }
+}
+
+/* Responsive shell + audio visualizer */
+main {
+  display: flex;
+  flex: 1;
+  min-height: 100vh;
+}
+
+.audio-visualizer-panel {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.95fr) minmax(220px, 1.05fr);
+  gap: 20px;
+  align-items: center;
+  border-radius: 24px;
+  padding: 22px 24px;
+}
+
+.audio-visualizer-stage {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.audio-orb-shell {
+  position: relative;
+  display: grid;
+  width: 140px;
+  height: 140px;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.audio-orb-core {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 74px;
+  height: 74px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.38), rgba(14, 165, 233, 0.3));
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  transform: scale(var(--orb-scale, 1));
+  transition: transform 120ms linear, box-shadow 120ms linear;
+}
+
+.audio-orb-core.connected {
+  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.02), 0 20px 44px rgba(79, 70, 229, 0.26);
+}
+
+.audio-orb-core .material-symbols-outlined {
+  font-size: 28px;
+  color: #ffffff;
+}
+
+.audio-orb-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.audio-orb-ring-inner {
+  inset: 18px;
+  opacity: 0.5;
+}
+
+.audio-orb-ring-outer {
+  opacity: 0.22;
+}
+
+.audio-bars {
+  display: grid;
+  grid-template-columns: repeat(24, minmax(4px, 1fr));
+  align-items: end;
+  gap: 6px;
+  flex: 1;
+  min-height: 112px;
+}
+
+.audio-bar {
+  display: block;
+  height: var(--bar-height, 20px);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(125, 211, 252, 0.55));
+  box-shadow: 0 8px 24px rgba(125, 211, 252, 0.08);
+  animation: audio-bar-idle 1.2s ease-in-out infinite alternate;
+  animation-delay: var(--bar-delay, 0ms);
+  transform-origin: bottom;
+}
+
+.audio-visualizer-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.audio-channel-card {
+  display: flex;
+  min-height: 88px;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+}
+
+.audio-channel-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.audio-channel-card strong {
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.audio-channel-card-status strong {
+  font-size: 18px;
+}
+
+@keyframes audio-bar-idle {
+  from {
+    opacity: 0.72;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.console-control-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 12;
+  margin-top: auto;
+  padding-top: 12px;
+  pointer-events: none;
+}
+
+.console-control-dock .control-tray {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  transform: none;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(20, 21, 25, 0.74);
+  padding: 12px 14px;
+  pointer-events: auto;
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+}
+
+.console-control-dock .actions-nav {
+  gap: 12px;
+}
+
+.console-control-dock .connection-container {
+  flex: 1;
+}
+
+.console-control-dock .action-button.connect-toggle {
+  width: 100%;
+  min-width: 190px;
+}
+
+@media (max-width: 1100px) {
+  .audio-visualizer-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .audio-visualizer-stage {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 900px) {
+  body:has(.sidebar.open) {
+    overflow: hidden;
+  }
+
+  .streaming-console {
+    min-height: 100dvh;
+  }
+
+  .main-app-area {
+    padding: 88px 14px 12px;
+  }
+
+  .transcription-container {
+    height: calc(100dvh - 100px);
+    max-width: 100%;
+  }
+
+  .transcription-toolbar {
+    gap: 12px;
+    padding: 16px 18px;
+  }
+
+  .transcription-live-strip {
+    padding: 12px 14px;
+  }
+
+  .transcription-view {
+    padding-bottom: 132px;
+  }
+
+  .sidebar {
+    top: auto;
+    bottom: 0;
+    width: 100vw;
+    height: min(76vh, 720px);
+    border-top: 1px solid var(--border-subtle);
+    border-left: 0;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    transform: translateY(100%);
+  }
+
+  .sidebar.open {
+    transform: translateY(0);
+  }
+
+  .sidebar-header {
+    padding-top: 18px;
+  }
+
+  .sidebar-header::before {
+    display: block;
+    width: 54px;
+    height: 5px;
+    margin: 0 auto 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    content: '';
+  }
+}
+
+@media (max-width: 720px) {
+  .header-right {
+    gap: 6px;
+  }
+
+  .settings-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .header-brand-mark {
+    gap: 10px;
+    border-radius: 18px;
+  }
+
+  .header-eyebrow {
+    display: none;
+  }
+
+  .transcription-live-strip {
+    min-height: 48px;
+    padding: 12px 14px;
+  }
+
+  .audio-visualizer-panel {
+    gap: 16px;
+    padding: 18px;
+  }
+
+  .audio-visualizer-stage {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .audio-orb-shell {
+    width: 112px;
+    height: 112px;
+  }
+
+  .audio-orb-core {
+    width: 60px;
+    height: 60px;
+  }
+
+  .audio-bars {
+    width: 100%;
+    gap: 4px;
+    min-height: 74px;
+  }
+
+  .audio-visualizer-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .audio-channel-card {
+    min-height: 72px;
+    padding: 14px;
+  }
+
+  .audio-channel-card strong {
+    font-size: 20px;
+  }
+
+  .transcription-meta {
+    flex-wrap: wrap;
+  }
+
+  .console-control-dock {
+    padding-top: 10px;
+  }
+
+  .console-control-dock .control-tray {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    border-radius: 22px;
+    padding: 12px;
+  }
+
+  .console-control-dock .actions-nav {
+    justify-content: space-between;
+  }
+
+  .console-control-dock .action-button {
+    width: 46px;
+    height: 46px;
+  }
+
+  .console-control-dock .action-button.connect-toggle {
+    min-width: 0;
+    height: 52px;
+    border-radius: 16px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 560px) {
+  .header-left {
+    min-width: 0;
+  }
+
+  .header-brand-mark {
+    max-width: calc(100vw - 108px);
+    padding: 8px 10px;
+  }
+
+  .header-title {
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .main-app-area {
+    padding: 74px 10px 10px;
+  }
+
+  .transcription-container {
+    gap: 10px;
+    height: calc(100dvh - 84px);
+  }
+
+  .transcription-toolbar,
+  .audio-visualizer-panel,
+  .empty-state-message {
+    border-radius: 18px;
+  }
+
+  .transcription-toolbar {
+    padding: 14px 14px 12px;
+  }
+
+  .transcription-toolbar-label {
+    margin-bottom: 4px;
+    font-size: 10px;
+  }
+
+  .transcription-toolbar h2 {
+    font-size: 17px;
+  }
+
+  .transcription-status-pill,
+  .transcription-live-pill {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  .transcription-view {
+    gap: 16px;
+    padding: 0 0 122px;
+  }
+
+  .transcription-text-content {
+    padding: 13px 14px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .transcription-source {
+    letter-spacing: 0.08em;
+  }
+
+  .transcription-timestamp {
+    font-size: 9px;
+  }
+
+  .audio-visualizer-panel {
+    padding: 14px;
+  }
+
+  .audio-orb-shell {
+    width: 96px;
+    height: 96px;
+  }
+
+  .audio-orb-core {
+    width: 54px;
+    height: 54px;
+  }
+
+  .audio-orb-core .material-symbols-outlined {
+    font-size: 24px;
+  }
+
+  .audio-bars {
+    min-height: 60px;
+    gap: 3px;
+  }
+
+  .audio-channel-card {
+    min-height: 64px;
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .audio-channel-card strong {
+    font-size: 18px;
+  }
+
+  .empty-state-message {
+    padding: 24px 18px;
+  }
+
+  .status-text {
+    font-size: 22px;
+  }
+
+  .hint-text {
+    font-size: 14px;
+  }
+
+  .sidebar {
+    height: 82vh;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+  }
+
+  .sidebar-content,
+  .sidebar-footer,
+  .sidebar-header {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .sidebar-content {
+    gap: 24px;
+  }
+
+  .console-control-dock .control-tray {
+    border-radius: 20px;
+    padding: 10px;
+  }
+
+  .console-control-dock .action-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .console-control-dock .action-button.connect-toggle {
+    height: 50px;
+    font-size: 13px;
   }
 }

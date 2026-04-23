@@ -9,7 +9,6 @@ import { useLiveAPIContext } from '@/contexts/LiveAPIContext';
 import { useState } from 'react';
 import ToolEditorModal from './ToolEditorModal';
 import { examplePrompts } from '@/lib/prompts';
-import ControlTray from './console/control-tray/ControlTray';
 
 const AVAILABLE_MODELS = [
   DEFAULT_LIVE_API_MODEL
@@ -149,9 +148,6 @@ export default function Sidebar() {
               <span className="material-symbols-outlined">add</span> Define New Capability
             </button>
           </div>
-        </div>
-        <div className="sidebar-footer">
-          <ControlTray />
         </div>
       </aside>
       {editingTool && (

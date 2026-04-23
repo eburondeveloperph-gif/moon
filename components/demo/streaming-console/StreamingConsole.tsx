@@ -4,6 +4,8 @@
 */
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import PopUp from '../popup/PopUp';
+import AudioVisualizer from './AudioVisualizer';
+import ControlTray from '../../console/control-tray/ControlTray';
 // FIX: Import LiveServerContent to correctly type the content handler.
 import { LiveServerContent } from '@google/genai';
 import { BEATRICE_BASE_PROMPT } from '@/lib/prompts/beatrice';
@@ -82,7 +84,14 @@ export default function StreamingConsole() {
   const { client, setConfig, connected } = useLiveAPIContext();
   const { systemPrompt, voice } = useSettings();
   const { tools, template } = useTools();
-  const { isGeneratingTask, activeCueUrl, taskResult, setTaskResult } = useUI();
+  const {
+    isGeneratingTask,
+    activeCueUrl,
+    taskResult,
+    setTaskResult,
+    cameraEnabled,
+    cameraPreviewUrl,
+  } = useUI();
   const turns = useLogStore(state => state.turns);
   const deferredTurns = useDeferredValue(turns);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -350,6 +359,33 @@ export default function StreamingConsole() {
         <p>{liveTranscript}</p>
       </div>
 
+      <AudioVisualizer />
+
+      {cameraEnabled && (
+        <section className="camera-preview-panel glass">
+          <div className="camera-preview-header">
+            <div>
+              <p className="camera-preview-label">Video Camera Web SDK</p>
+              <h3>Live camera feed</h3>
+            </div>
+            <div className={`transcription-status-pill ${connected ? 'connected' : ''}`}>
+              <span className="transcription-status-dot" />
+              {connected ? 'Streaming to Gemini' : 'Preview only'}
+            </div>
+          </div>
+          <div className="camera-preview-frame">
+            {cameraPreviewUrl ? (
+              <img src={cameraPreviewUrl} alt="Camera preview" className="camera-preview-image" />
+            ) : (
+              <div className="camera-preview-placeholder">
+                <span className="material-symbols-outlined">videocam</span>
+                <p>Starting camera preview…</p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {deferredTurns.length === 0 ? (
         <div className="empty-state-message">
           <div className="pulsing-orb"></div>
@@ -401,6 +437,10 @@ export default function StreamingConsole() {
           ))}
         </div>
       )}
+
+      <div className="console-control-dock">
+        <ControlTray />
+      </div>
     </div>
   );
 }

@@ -38,6 +38,8 @@ export type UseLiveApiResults = {
   connected: boolean;
 
   volume: number;
+  speakerMuted: boolean;
+  setSpeakerMuted: (muted: boolean) => void;
 };
 
 export function useLiveApi({
@@ -53,12 +55,17 @@ export function useLiveApi({
   const [volume, setVolume] = useState(0);
   const [connected, setConnected] = useState(false);
   const [config, setConfig] = useState<LiveConnectConfig>({});
+  const [speakerMuted, setSpeakerMuted] = useState(false);
 
   // register audio for streaming server -> speakers
   useEffect(() => {
     if (!audioStreamerRef.current) {
       audioContext({ id: 'audio-out' }).then((audioCtx: AudioContext) => {
         audioStreamerRef.current = new AudioStreamer(audioCtx);
+        audioStreamerRef.current.gainNode.gain.setValueAtTime(
+          speakerMuted ? 0 : 1,
+          audioCtx.currentTime,
+        );
         audioStreamerRef.current
           .addWorklet<any>('vumeter-out', VolMeterWorket, (ev: any) => {
             setVolume(ev.data.volume);
@@ -71,7 +78,15 @@ export function useLiveApi({
           });
       });
     }
-  }, [audioStreamerRef]);
+  }, [audioStreamerRef, speakerMuted]);
+
+  useEffect(() => {
+    if (!audioStreamerRef.current) return;
+    audioStreamerRef.current.gainNode.gain.setValueAtTime(
+      speakerMuted ? 0 : 1,
+      audioStreamerRef.current.context.currentTime,
+    );
+  }, [speakerMuted, connected]);
 
   useEffect(() => {
     let silenceTimer: ReturnType<typeof setInterval> | null = null;
@@ -350,5 +365,7 @@ export function useLiveApi({
     connected,
     disconnect,
     volume,
+    speakerMuted,
+    setSpeakerMuted,
   };
 }

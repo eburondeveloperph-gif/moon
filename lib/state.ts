@@ -59,7 +59,7 @@ export const useSettings = create<{
   setModel: (model: string) => void;
   setVoice: (voice: string) => void;
 }>(set => ({
-  systemPrompt: `You are a helpful and friendly AI assistant. Be conversational and concise.`,
+  systemPrompt: systemPrompts.beatrice,
   model: DEFAULT_LIVE_API_MODEL,
   voice: DEFAULT_VOICE,
   setSystemPrompt: prompt => set({ systemPrompt: prompt }),
@@ -85,6 +85,12 @@ export const useUI = create<{
   setGeneratingTask: (isGenerating: boolean, cueUrl?: string) => void;
   taskResult: TaskResult | null;
   setTaskResult: (result: TaskResult | null) => void;
+  micLevel: number;
+  setMicLevel: (level: number) => void;
+  cameraEnabled: boolean;
+  setCameraEnabled: (enabled: boolean) => void;
+  cameraPreviewUrl: string | null;
+  setCameraPreviewUrl: (previewUrl: string | null) => void;
 }>(set => ({
   isSidebarOpen: true,
   toggleSidebar: () => set(state => ({ isSidebarOpen: !state.isSidebarOpen })),
@@ -93,6 +99,12 @@ export const useUI = create<{
   setGeneratingTask: (isGenerating, cueUrl = null) => set({ isGeneratingTask: isGenerating, activeCueUrl: cueUrl }),
   taskResult: null,
   setTaskResult: (result) => set({ taskResult: result }),
+  micLevel: 0,
+  setMicLevel: level => set({ micLevel: Number.isFinite(level) ? Math.max(0, Math.min(level, 1)) : 0 }),
+  cameraEnabled: false,
+  setCameraEnabled: cameraEnabled => set({ cameraEnabled }),
+  cameraPreviewUrl: null,
+  setCameraPreviewUrl: cameraPreviewUrl => set({ cameraPreviewUrl }),
 }));
 
 /**
@@ -117,8 +129,8 @@ export const useTools = create<{
   removeTool: (toolName: string) => void;
   updateTool: (oldName: string, updatedTool: FunctionCall) => void;
 }>(set => ({
-  tools: customerSupportTools,
-  template: 'customer-support',
+  tools: beatriceTools,
+  template: 'beatrice',
   setTemplate: (template: Template) => {
     set({ tools: toolsets[template], template });
     useSettings.getState().setSystemPrompt(systemPrompts[template]);
