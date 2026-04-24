@@ -343,17 +343,44 @@ export default function StreamingConsole() {
         </div>
       </div>
 
-      {/* Listening Status Area */}
-      <div className="dashboard-panel dashboard-panel-lg flex-1 relative flex flex-col items-center justify-center overflow-hidden">
-        <div className="glow-orb"></div>
-        <div className="relative z-10 text-center">
-          <h1 className="text-4xl font-semibold mb-3 tracking-tight">
-            {connected ? 'Beatrice is listening' : 'Beatrice is resting'}
-          </h1>
-          <p className="text-muted">
-            {connected ? 'Speak with confidence, Boss Joe. I am here for you.' : 'Press play to awaken Beatrice.'}
-          </p>
-        </div>
+      {/* Main Content Area: Status or Transcript */}
+      <div className="dashboard-panel dashboard-panel-lg flex-1 relative flex flex-col overflow-hidden">
+        <div className="glow-orb" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}></div>
+        
+        {deferredTurns.length === 0 ? (
+          <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center p-8">
+            <h1 className="text-4xl font-semibold mb-3 tracking-tight">
+              {connected ? 'Beatrice is listening' : 'Beatrice is resting'}
+            </h1>
+            <p className="text-muted">
+              {connected ? 'Speak with confidence, Boss Joe. I am here for you.' : 'Press play to awaken Beatrice.'}
+            </p>
+          </div>
+        ) : (
+          <div 
+            className="transcription-view relative z-10 flex-1 overflow-y-auto p-8" 
+            ref={scrollRef} 
+            onScroll={handleTranscriptScroll}
+          >
+            {deferredTurns.map((t, i) => (
+              <div
+                key={i}
+                className={`transcription-entry ${t.role} ${!t.isFinal ? 'interim' : ''}`}
+              >
+                <div className="transcription-meta">
+                  <div className="transcription-header">
+                    <div className="transcription-source">
+                      {t.role === 'user' ? 'Boss Joe' : t.role === 'agent' ? 'Beatrice' : 'System'}
+                    </div>
+                  </div>
+                </div>
+                <div className="transcription-text-content">
+                  {renderContent(t.text)}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Bottom Control Bar */}
