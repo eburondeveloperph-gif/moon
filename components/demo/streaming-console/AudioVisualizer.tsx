@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { useMemo } from 'react';
+import c from 'classnames';
 import { useLiveAPIContext } from '@/contexts/LiveAPIContext';
 import { useUI } from '@/lib/state';
 
