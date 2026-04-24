@@ -55,16 +55,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ children }) => {
       <div className="ambient-glow glow-1" />
       <div className="ambient-glow glow-2" />
 
-      {/* Main Stage — left side with modal */}
       <main className="auth-main-stage">
-        <div className="auth-brand-indicator">
-          <div className="auth-brand-title">
-            <div className="auth-status-dot" />
-            Beatrice Playground
-          </div>
-          <div className="auth-brand-subtitle">Authentication Environment</div>
-        </div>
-
         <div className="auth-modal">
           <div className="auth-modal-logo">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -114,55 +105,6 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ children }) => {
           </div>
         </div>
       </main>
-
-      <aside className="auth-sidebar-preview" aria-hidden="true">
-        <div className="auth-preview-header">
-          <h2>Voice Hub</h2>
-          <button className="auth-preview-icon-button" type="button" tabIndex={-1}>
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-
-        <div className="auth-preview-content">
-          <div className="auth-preview-group">
-            <label className="auth-preview-label">Persona Template</label>
-            <div className="auth-preview-select">Beatrice</div>
-          </div>
-
-          <div className="auth-preview-group">
-            <label className="auth-preview-label">Active Instruction Overlay</label>
-            <div className="auth-preview-textarea">
-              You are a helpful and friendly AI assistant. Be conversational and concise.
-            </div>
-          </div>
-
-          <div className="auth-preview-group">
-            <label className="auth-preview-label">Presets</label>
-            <div className="auth-preview-chips">
-              <span className="auth-preview-chip">Executive Presence</span>
-              <span className="auth-preview-chip">Warm &amp; Loyal</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="auth-preview-footer">
-          <div className="auth-preview-actions">
-            <button className="auth-preview-icon-button" type="button" tabIndex={-1}>
-              <span className="material-symbols-outlined">mic</span>
-            </button>
-            <button className="auth-preview-icon-button" type="button" tabIndex={-1}>
-              <span className="material-symbols-outlined">volume_up</span>
-            </button>
-            <button className="auth-preview-icon-button" type="button" tabIndex={-1}>
-              <span className="material-symbols-outlined">refresh</span>
-            </button>
-          </div>
-
-          <button className="auth-preview-playbar" type="button" tabIndex={-1}>
-            <span className="material-symbols-outlined filled">play_arrow</span>
-          </button>
-        </div>
-      </aside>
     </div>
   );
 };
