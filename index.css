@@ -2195,27 +2195,32 @@ main {
 }
 
 .console-control-dock {
-  position: sticky;
+  position: absolute;
   bottom: 0;
-  z-index: 12;
-  margin-top: auto;
-  padding-top: 12px;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 24px 32px;
   pointer-events: none;
+  background: linear-gradient(to top, var(--bg-base) 0%, transparent 100%);
 }
 
 .console-control-dock .control-tray {
   position: relative;
-  left: auto;
-  bottom: auto;
-  transform: none;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
   justify-content: space-between;
-  gap: 16px;
+  align-items: center;
+  gap: 20px;
   border: 1px solid var(--border-subtle);
-  background: rgba(20, 21, 25, 0.74);
-  padding: 12px 14px;
+  background: rgba(20, 21, 25, 0.75);
+  padding: 14px 24px;
+  border-radius: 24px;
   pointer-events: auto;
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: blur(28px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
 }
 
 .console-control-dock .actions-nav {
