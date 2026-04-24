@@ -16,6 +16,10 @@
   --text: #ffffff;
   --Red-400: #ff6b81;
   
+  --accent-blue: #3b82f6;
+  --accent-emerald: #34d399;
+  --accent-stop: #ff3366;
+  
   /* Layout */
   --sidebar-width: 320px;
   --header-height: 80px;
@@ -1324,7 +1328,22 @@ button {
 .bar-anim {
   animation: pulse-height 1.5s infinite ease-in-out;
   transform-origin: center;
+  height: var(--bar-h, 20%);
+  animation-delay: var(--bar-d, 0s);
 }
+
+.bar-connected {
+  background: var(--accent-blue);
+  opacity: 0.8;
+}
+
+.bar-idle {
+  background: var(--text-dim);
+  opacity: 0.4;
+}
+
+.text-stop { color: var(--accent-stop); }
+.text-play { color: var(--accent-blue); }
 
 header {
   position: fixed;

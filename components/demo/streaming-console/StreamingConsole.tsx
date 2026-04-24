@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
-import c from 'clsx';
+import c from 'classnames';
 import PopUp from '../popup/PopUp';
 import AudioVisualizer from './AudioVisualizer';
 import ControlTray from '../../console/control-tray/ControlTray';
@@ -314,7 +314,7 @@ export default function StreamingConsole() {
             "bg-red-900/20 border-red-500/30 hover:bg-red-900/40": connected
           })}
         >
-          <span className="material-symbols-outlined text-3xl" style={{ color: connected ? '#ff3366' : '#3b82f6' }}>
+          <span className={c("material-symbols-outlined text-3xl", connected ? "text-stop" : "text-play")}>
             {connected ? 'stop' : 'play_arrow'}
           </span>
         </button>

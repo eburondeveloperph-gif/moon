@@ -37,12 +37,10 @@ export default function AudioVisualizer() {
       {bars.map(bar => (
         <div 
           key={bar.id}
-          className="w-1.5 bg-dim rounded-full bar-anim"
+          className={c("w-1.5 rounded-full bar-anim", connected ? "bar-connected" : "bar-idle")}
           style={{ 
-            height: `${20 + bar.height * 80}%`, 
-            animationDelay: `-${Math.random() * 1.5}s`,
-            background: connected ? '#3b82f6' : '#64748b',
-            opacity: connected ? 0.8 : 0.4
+            '--bar-h': `${20 + bar.height * 80}%`, 
+            '--bar-d': `-${Math.random() * 1.5}s`
           } as CSSProperties}
         />
       ))}
