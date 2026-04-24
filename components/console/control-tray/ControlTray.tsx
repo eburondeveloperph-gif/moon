@@ -30,9 +30,10 @@ import { useLiveAPIContext } from '../../../contexts/LiveAPIContext';
 
 export type ControlTrayProps = {
   children?: ReactNode;
+  hidden?: boolean;
 };
 
-function ControlTray({ children }: ControlTrayProps) {
+function ControlTray({ children, hidden = false }: ControlTrayProps) {
   const [audioRecorder] = useState(() => new AudioRecorder());
   const [muted, setMuted] = useState(false);
   const connectButtonRef = useRef<HTMLButtonElement>(null);
@@ -54,6 +55,7 @@ function ControlTray({ children }: ControlTrayProps) {
     cameraEnabled,
     setCameraEnabled,
     setCameraPreviewUrl,
+    setMicPermission,
   } = useUI();
   const setMicLevel = useUI.getState().setMicLevel;
   const clientRef = useRef(client);
@@ -153,11 +155,40 @@ function ControlTray({ children }: ControlTrayProps) {
       };
     };
 
+    let cancelled = false;
+
+    const startAudio = async () => {
+      try {
+        await setupDeepgram();
+        audioRecorder.on('data', onData);
+        audioRecorder.on('volume', onVolume);
+        await audioRecorder.start();
+        if (!cancelled) {
+          setMicPermission('granted');
+        }
+      } catch (error: any) {
+        if (cancelled) return;
+        const denied = error?.name === 'NotAllowedError' || error?.name === 'PermissionDeniedError';
+        const unsupported = !navigator.mediaDevices?.getUserMedia;
+        setMicPermission(
+          unsupported ? 'unsupported' : denied ? 'denied' : 'prompt',
+          unsupported
+            ? 'This browser does not expose microphone capture.'
+            : denied
+              ? 'Microphone permission was blocked. Allow access in the browser and try again.'
+              : 'Microphone could not be started. Please retry.',
+        );
+        setMicLevel(0);
+        if (dgConnection.current?.readyState === WebSocket.OPEN) {
+          dgConnection.current.close();
+        }
+        dgConnection.current = null;
+        disconnect();
+      }
+    };
+
     if (connected && !muted && audioRecorder) {
-      setupDeepgram();
-      audioRecorder.on('data', onData);
-      audioRecorder.on('volume', onVolume);
-      audioRecorder.start();
+      startAudio();
     } else {
       audioRecorder.stop();
       setMicLevel(0);
@@ -169,6 +200,7 @@ function ControlTray({ children }: ControlTrayProps) {
       }
     }
     return () => {
+      cancelled = true;
       audioRecorder.off('data', onData);
       audioRecorder.off('volume', onVolume);
       setMicLevel(0);
@@ -179,7 +211,7 @@ function ControlTray({ children }: ControlTrayProps) {
         dgConnection.current = null;
       }
     };
-  }, [connected, client, muted, audioRecorder, setMicLevel]);
+  }, [connected, client, muted, audioRecorder, setMicLevel, disconnect, setMicPermission]);
 
   useEffect(() => {
     let disposed = false;
@@ -295,6 +327,10 @@ function ControlTray({ children }: ControlTrayProps) {
   const connectButtonTitle = connected ? 'Stop streaming' : 'Start streaming';
   const speakerButtonTitle = speakerMuted ? 'Unmute speaker output' : 'Mute speaker output';
   const cameraButtonTitle = cameraEnabled ? 'Stop camera' : 'Start camera';
+
+  if (hidden) {
+    return null;
+  }
 
   return (
     <section className="control-tray">

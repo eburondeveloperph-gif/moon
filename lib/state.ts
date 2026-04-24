@@ -77,6 +77,14 @@ export interface TaskResult {
   downloadFilename?: string;
 }
 
+export type MicPermissionState =
+  | 'unknown'
+  | 'requesting'
+  | 'prompt'
+  | 'granted'
+  | 'denied'
+  | 'unsupported';
+
 export const useUI = create<{
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
@@ -89,6 +97,9 @@ export const useUI = create<{
   setTaskResult: (result: TaskResult | null) => void;
   micLevel: number;
   setMicLevel: (level: number) => void;
+  micPermission: MicPermissionState;
+  micPermissionMessage: string | null;
+  setMicPermission: (permission: MicPermissionState, message?: string | null) => void;
   cameraEnabled: boolean;
   setCameraEnabled: (enabled: boolean) => void;
   cameraPreviewUrl: string | null;
@@ -105,6 +116,10 @@ export const useUI = create<{
   setTaskResult: (result) => set({ taskResult: result }),
   micLevel: 0,
   setMicLevel: level => set({ micLevel: Number.isFinite(level) ? Math.max(0, Math.min(level, 1)) : 0 }),
+  micPermission: 'unknown',
+  micPermissionMessage: null,
+  setMicPermission: (micPermission, micPermissionMessage = null) =>
+    set({ micPermission, micPermissionMessage }),
   cameraEnabled: false,
   setCameraEnabled: cameraEnabled => set({ cameraEnabled }),
   cameraPreviewUrl: null,

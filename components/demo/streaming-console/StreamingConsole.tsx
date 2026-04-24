@@ -105,6 +105,8 @@ export default function StreamingConsole() {
     micLevel,
     isChatOpen,
     toggleChat,
+    micPermission,
+    setMicPermission,
   } = useUI();
   const turns = useLogStore(state => state.turns);
   const deferredTurns = useDeferredValue(turns);
@@ -293,6 +295,56 @@ export default function StreamingConsole() {
     }
   }, [deferredTurns]);
 
+  useEffect(() => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setMicPermission('unsupported', 'This browser does not support microphone capture.');
+      return;
+    }
+
+    if (!navigator.permissions?.query) {
+      return;
+    }
+
+    let disposed = false;
+    let permissionStatus: PermissionStatus | null = null;
+
+    const mapPermissionState = (state: PermissionState) => {
+      if (state === 'granted') return 'granted';
+      if (state === 'denied') return 'denied';
+      return 'prompt';
+    };
+
+    const syncPermission = () => {
+      if (!permissionStatus || disposed) return;
+      const nextState = mapPermissionState(permissionStatus.state);
+      setMicPermission(
+        nextState,
+        nextState === 'denied'
+          ? 'Microphone access is blocked. Enable it in the browser site settings.'
+          : null,
+      );
+    };
+
+    navigator.permissions
+      .query({ name: 'microphone' as PermissionName })
+      .then(status => {
+        if (disposed) return;
+        permissionStatus = status;
+        syncPermission();
+        permissionStatus.onchange = syncPermission;
+      })
+      .catch(() => {
+        // Ignore unsupported Permissions API implementations.
+      });
+
+    return () => {
+      disposed = true;
+      if (permissionStatus) {
+        permissionStatus.onchange = null;
+      }
+    };
+  }, [setMicPermission]);
+
   const handleTranscriptScroll = () => {
     const node = scrollRef.current;
     if (!node) return;
@@ -306,7 +358,13 @@ export default function StreamingConsole() {
   const isUserDraft = latestTurn?.role === 'user' && !latestTurn.isFinal;
   const statusLabel = connected ? (isAgentDraft ? 'Thinking' : 'Listening') : 'Idle';
   const liveTranscript =
-    latestTurn && !latestTurn.isFinal && latestTurn.text.trim()
+    micPermission === 'requesting'
+      ? 'Waiting for microphone permission...'
+      : micPermission === 'unsupported'
+        ? 'This browser does not support microphone capture.'
+      : micPermission === 'denied'
+      ? 'Microphone access is blocked. Tap the mic, then allow permission in your browser.'
+      : latestTurn && !latestTurn.isFinal && latestTurn.text.trim()
       ? latestTurn.text
       : connected
         ? 'Speak naturally. Beatrice is listening.'
@@ -328,8 +386,54 @@ export default function StreamingConsole() {
     setManualMessage('');
   };
 
+  const requestMicrophoneAccess = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setMicPermission('unsupported', 'This browser does not support microphone capture.');
+      return false;
+    }
+
+    setMicPermission('requesting', 'Waiting for microphone permission...');
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+      stream.getTracks().forEach(track => track.stop());
+      setMicPermission('granted');
+      return true;
+    } catch (error: any) {
+      const denied = error?.name === 'NotAllowedError' || error?.name === 'PermissionDeniedError';
+      const missingDevice = error?.name === 'NotFoundError' || error?.name === 'DevicesNotFoundError';
+      setMicPermission(
+        denied ? 'denied' : 'prompt',
+        denied
+          ? 'Microphone permission was denied. Allow it in the browser and try again.'
+          : missingDevice
+            ? 'No microphone was found on this device.'
+            : 'Microphone permission could not be completed.',
+      );
+      return false;
+    }
+  };
+
+  const handleMicToggle = async () => {
+    if (connected) {
+      disconnect();
+      return;
+    }
+
+    const granted = await requestMicrophoneAccess();
+    if (!granted) return;
+    await connect();
+  };
+
   return (
     <>
+      <ControlTray hidden />
       <div className="voice-screen">
         <div className={c('top-status', { visible: connected || deferredTurns.length > 0 })}>
           {statusLabel}
@@ -355,17 +459,6 @@ export default function StreamingConsole() {
           </div>
         </div>
 
-        <div className="voice-meters">
-          <div className="voice-meter-card">
-            <span>Mic</span>
-            <strong>{Math.round(micLevel * 100)}%</strong>
-          </div>
-          <div className="voice-meter-card">
-            <span>Voice</span>
-            <strong>{Math.round(volume * 100)}%</strong>
-          </div>
-        </div>
-
         <button
           className="btn-circle btn-settings-react"
           onClick={useUI.getState().toggleSidebar}
@@ -375,12 +468,16 @@ export default function StreamingConsole() {
         </button>
 
         <button
-          className={c('btn-circle btn-mic-react', { stop: connected })}
-          onClick={connected ? disconnect : connect}
+          className={c('btn-circle btn-mic-react', {
+            stop: connected,
+            requesting: micPermission === 'requesting',
+          })}
+          onClick={handleMicToggle}
+          disabled={micPermission === 'requesting'}
           title={connected ? 'Stop session' : 'Start session'}
         >
           <span className="material-symbols-outlined">
-            {connected ? 'stop' : 'mic'}
+            {connected ? 'stop' : micPermission === 'requesting' ? 'hourglass_top' : 'mic'}
           </span>
         </button>
 
