@@ -80,6 +80,8 @@ export interface TaskResult {
 export const useUI = create<{
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
+  isChatOpen: boolean;
+  toggleChat: () => void;
   isGeneratingTask: boolean;
   activeCueUrl: string | null;
   setGeneratingTask: (isGenerating: boolean, cueUrl?: string) => void;
@@ -92,8 +94,10 @@ export const useUI = create<{
   cameraPreviewUrl: string | null;
   setCameraPreviewUrl: (previewUrl: string | null) => void;
 }>(set => ({
-  isSidebarOpen: true,
+  isSidebarOpen: false,
   toggleSidebar: () => set(state => ({ isSidebarOpen: !state.isSidebarOpen })),
+  isChatOpen: false,
+  toggleChat: () => set(state => ({ isChatOpen: !state.isChatOpen })),
   isGeneratingTask: false,
   activeCueUrl: null,
   setGeneratingTask: (isGenerating, cueUrl = null) => set({ isGeneratingTask: isGenerating, activeCueUrl: cueUrl }),

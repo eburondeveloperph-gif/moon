@@ -25,10 +25,43 @@ import StreamingConsole from './components/demo/streaming-console/StreamingConso
 import Sidebar from './components/Sidebar';
 import { LiveAPIProvider } from './contexts/LiveAPIContext';
 
-const API_KEY = process.env.GEMINI_API_KEY as string;
-if (typeof API_KEY !== 'string') {
-  throw new Error(
-    'Missing required environment variable: REACT_APP_GEMINI_API_KEY'
+const API_KEY = process.env.GEMINI_API_KEY;
+
+function MissingApiKeyScreen() {
+  return (
+    <div className="auth-page">
+      <div className="ambient-glow glow-1" />
+      <div className="ambient-glow glow-2" />
+
+      <main className="auth-main-stage">
+        <div className="auth-brand-indicator">
+          <div className="auth-brand-title">
+            <div className="auth-status-dot" />
+            Beatrice Playground
+          </div>
+          <div className="auth-brand-subtitle">Local environment setup required</div>
+        </div>
+
+        <div className="auth-modal">
+          <div className="auth-modal-header">
+            <h1>Missing Gemini API key</h1>
+            <p>
+              The frontend was rendering blank because the app crashed before mount.
+              Add your Gemini key, then restart the dev server.
+            </p>
+          </div>
+
+          <div className="auth-methods">
+            <div className="auth-btn-secondary" style={{ justifyContent: 'flex-start', cursor: 'default' }}>
+              <code>GEMINI_API_KEY=your_key_here</code>
+            </div>
+            <div className="auth-modal-footer" style={{ width: '100%', textAlign: 'left' }}>
+              Create <code>.env.local</code> in the project root, add the key above, then run <code>npm run dev</code>.
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }
 
@@ -37,6 +70,10 @@ if (typeof API_KEY !== 'string') {
  * Manages video streaming state and provides controls for webcam/screen capture.
  */
 function App() {
+  if (!API_KEY) {
+    return <MissingApiKeyScreen />;
+  }
+
   return (
     <div className="App">
       <AuthScreen>

@@ -103,12 +103,15 @@ export default function StreamingConsole() {
     setCameraEnabled,
     cameraPreviewUrl,
     micLevel,
+    isChatOpen,
+    toggleChat,
   } = useUI();
   const turns = useLogStore(state => state.turns);
   const deferredTurns = useDeferredValue(turns);
   const scrollRef = useRef<HTMLDivElement>(null);
   const autoScrollRef = useRef(true);
-  const [showPopUp, setShowPopUp] = useState(true);
+  const [showPopUp, setShowPopUp] = useState(false);
+  const [manualMessage, setManualMessage] = useState('');
 
   const handleClosePopUp = () => {
     setShowPopUp(false);
@@ -299,143 +302,150 @@ export default function StreamingConsole() {
   };
 
   const latestTurn = deferredTurns.at(-1);
+  const isAgentDraft = latestTurn?.role === 'agent' && !latestTurn.isFinal;
+  const isUserDraft = latestTurn?.role === 'user' && !latestTurn.isFinal;
+  const statusLabel = connected ? (isAgentDraft ? 'Thinking' : 'Listening') : 'Idle';
   const liveTranscript =
     latestTurn && !latestTurn.isFinal && latestTurn.text.trim()
       ? latestTurn.text
       : connected
-        ? 'Listening for speech and updating the transcript live.'
-        : 'Press play to start live transcription.';
+        ? 'Speak naturally. Beatrice is listening.'
+        : 'Tap the microphone to start a voice session.';
+  const orbEnergy = connected ? Math.max(0.08, micLevel, volume * 0.9) : 0;
+  const orbScale = connected ? 1 + orbEnergy * 0.38 : 1;
+  const orbShadow = connected ? 50 + orbEnergy * 110 : 50;
+
+  const handleManualSend = () => {
+    const text = manualMessage.trim();
+    if (!text || !connected) return;
+
+    useLogStore.getState().addTurn({
+      role: 'user',
+      text,
+      isFinal: true,
+    });
+    client.send([{ text }], true);
+    setManualMessage('');
+  };
 
   return (
-    <div className="flex-1 flex flex-col gap-6">
-      {/* Live Transcription Bar */}
-      <div className="dashboard-panel p-4 flex items-center gap-4">
-        <span className="material-symbols-outlined text-dim">graphic_eq</span>
-        <p className="text-sm text-muted font-medium">{liveTranscript}</p>
-      </div>
+    <>
+      <div className="voice-screen">
+        <div className={c('top-status', { visible: connected || deferredTurns.length > 0 })}>
+          {statusLabel}
+        </div>
 
-      {/* Audio Dashboard Panel */}
-      <div className="dashboard-panel dashboard-panel-lg audio-dashboard">
-        {/* Play/Pause Toggle */}
-        <button 
-          onClick={connected ? disconnect : connect}
-          className={c("w-20 h-20 rounded-full flex items-center justify-center shrink-0 border transition shadow-lg", {
-            "bg-button border-blue-400/30 hover:bg-button-hover": !connected,
-            "bg-red-900/20 border-red-500/30 hover:bg-red-900/40": connected
-          })}
+        <div className="orb-container">
+          <div
+            className={c('orb orb-react', {
+              thinking: isAgentDraft,
+              connecting: isUserDraft,
+              active: connected,
+            })}
+            style={{
+              transform: `scale(${orbScale})`,
+              boxShadow: `0 0 ${orbShadow}px rgba(24, 139, 242, ${connected ? 0.35 + orbEnergy * 0.4 : 0.4})`,
+            }}
+          />
+        </div>
+
+        <div className="transcript-container">
+          <div className={c('transcript', { interim: latestTurn && !latestTurn.isFinal })}>
+            {liveTranscript}
+          </div>
+        </div>
+
+        <div className="voice-meters">
+          <div className="voice-meter-card">
+            <span>Mic</span>
+            <strong>{Math.round(micLevel * 100)}%</strong>
+          </div>
+          <div className="voice-meter-card">
+            <span>Voice</span>
+            <strong>{Math.round(volume * 100)}%</strong>
+          </div>
+        </div>
+
+        <button
+          className="btn-circle btn-settings-react"
+          onClick={useUI.getState().toggleSidebar}
+          title="Open settings"
         >
-          <span className={c("material-symbols-outlined text-3xl", connected ? "text-stop" : "text-play")}>
-            {connected ? 'stop' : 'play_arrow'}
+          <span className="material-symbols-outlined">tune</span>
+        </button>
+
+        <button
+          className={c('btn-circle btn-mic-react', { stop: connected })}
+          onClick={connected ? disconnect : connect}
+          title={connected ? 'Stop session' : 'Start session'}
+        >
+          <span className="material-symbols-outlined">
+            {connected ? 'stop' : 'mic'}
           </span>
         </button>
 
-        {/* Visualizer Placeholder */}
-        <div className="flex-1 flex items-center gap-1.5 h-12 px-6">
-          <AudioVisualizer />
-        </div>
-
-        {/* Stat Cards */}
-        <div className="flex gap-4 shrink-0">
-          <div className="bg-[#181A24] border border-white/5 rounded-xl p-4 w-28">
-            <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider mb-1">Mic Input</p>
-            <p className="text-2xl font-bold">{Math.round(micLevel * 100)}%</p>
-          </div>
-          <div className="bg-[#181A24] border border-white/5 rounded-xl p-4 w-28">
-            <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider mb-1">Voice Output</p>
-            <p className="text-2xl font-bold">{Math.round(volume * 100)}%</p>
-          </div>
-          <div className="bg-[#181A24] border border-white/5 rounded-xl p-4 w-28">
-            <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider mb-1">Session</p>
-            <p className={c("text-lg font-bold mt-1", connected ? "text-blue-400" : "text-gray-500")}>
-              {connected ? 'Active' : 'Standby'}
-            </p>
-          </div>
-        </div>
+        <button
+          className="btn-circle btn-chat-react"
+          onClick={toggleChat}
+          title="Open conversation"
+        >
+          <span className="material-symbols-outlined">
+            {isChatOpen ? 'close' : 'chat_bubble'}
+          </span>
+        </button>
       </div>
 
-      {/* Main Content Area: Status or Transcript */}
-      <div className="dashboard-panel dashboard-panel-lg flex-1 relative flex flex-col overflow-hidden">
-        <div className="glow-orb glow-orb-center"></div>
-        
-        {deferredTurns.length === 0 ? (
-          <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center p-8">
-            <h1 className="text-4xl font-semibold mb-3 tracking-tight">
-              {connected ? 'Beatrice is listening' : 'Beatrice is resting'}
-            </h1>
-            <p className="text-muted">
-              {connected ? 'Speak with confidence, Boss Joe. I am here for you.' : 'Press play to awaken Beatrice.'}
-            </p>
-          </div>
-        ) : (
-          <div 
-            className="transcription-view relative z-10 flex-1 overflow-y-auto p-8" 
-            ref={scrollRef} 
-            onScroll={handleTranscriptScroll}
-          >
-            {deferredTurns.map((t, i) => (
+      <div className={c('drawer chat-drawer', { open: isChatOpen })}>
+        <div className="drawer-header">
+          <h2>Conversation</h2>
+          <button className="btn-close" onClick={toggleChat}>
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div
+          className="drawer-content chat-history"
+          ref={scrollRef}
+          onScroll={handleTranscriptScroll}
+        >
+          {deferredTurns.length === 0 ? (
+            <div className="chat-empty-state">Start a voice session to see the conversation here.</div>
+          ) : (
+            deferredTurns.map((t, i) => (
               <div
                 key={i}
-                className={`transcription-entry ${t.role} ${!t.isFinal ? 'interim' : ''}`}
+                className={c('chat-bubble', {
+                  user: t.role === 'user',
+                  assistant: t.role !== 'user',
+                  interim: !t.isFinal,
+                })}
               >
-                <div className="transcription-meta">
-                  <div className="transcription-header">
-                    <div className="transcription-source">
-                      {t.role === 'user' ? 'Boss Joe' : t.role === 'agent' ? 'Beatrice' : 'System'}
-                    </div>
-                  </div>
-                </div>
-                <div className="transcription-text-content">
-                  {renderContent(t.text)}
-                </div>
+                {renderContent(t.text)}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            ))
+          )}
+        </div>
 
-      {/* Bottom Control Bar */}
-      <div className="bg-[#11131A] border border-white/5 rounded-full p-2 flex items-center justify-between mt-auto mx-4 mb-4 shadow-xl">
-        <div className="flex items-center gap-1 pl-2">
-          <button 
-            onClick={() => setSpeakerMuted(!speakerMuted)}
-            className={c("p-3.5 rounded-full transition", speakerMuted ? "text-red-400 bg-red-400/5" : "text-gray-400 hover:bg-white/5 hover:text-white")}
-            title={speakerMuted ? "Unmute Audio" : "Mute Audio"}
-          >
-            <span className="material-symbols-outlined text-xl">{speakerMuted ? 'volume_off' : 'volume_up'}</span>
-          </button>
-          
-          <button 
-            onClick={() => setCameraEnabled(!cameraEnabled)}
-            className={c("p-3.5 rounded-full transition", cameraEnabled ? "text-blue-400 bg-blue-400/5" : "text-gray-400 hover:bg-white/5 hover:text-white")}
-            title={cameraEnabled ? "Stop Camera" : "Start Camera"}
-          >
-            <span className="material-symbols-outlined text-xl">{cameraEnabled ? 'videocam' : 'videocam_off'}</span>
-          </button>
-
-          <button 
-            onClick={useLogStore.getState().clearTurns}
-            className="p-3.5 hover:bg-white/5 rounded-full text-gray-400 hover:text-white transition"
-            title="Reset Session"
-          >
-            <span className="material-symbols-outlined text-xl">refresh</span>
+        <div className="chat-input-area">
+          <input
+            type="text"
+            value={manualMessage}
+            onChange={event => setManualMessage(event.target.value)}
+            onKeyDown={event => {
+              if (event.key === 'Enter') {
+                handleManualSend();
+              }
+            }}
+            placeholder={connected ? 'Type a message...' : 'Start the session to chat'}
+            disabled={!connected}
+          />
+          <button className="btn-send" onClick={handleManualSend} disabled={!connected}>
+            <span className="material-symbols-outlined">send</span>
           </button>
         </div>
-        
-        <button 
-          onClick={connected ? disconnect : connect}
-          className="flex items-center gap-2 bg-[#1A1C24] hover:bg-[#222530] border border-white/5 px-8 py-3 rounded-full text-sm font-medium transition mr-2 group"
-          title={connected ? "Rest Beatrice" : "Awaken Beatrice"}
-        >
-          <span className={c("material-symbols-outlined text-lg transition-colors", connected ? "text-red-400" : "text-blue-400")}>
-            {connected ? 'power_settings_new' : 'bolt'}
-          </span>
-          <span className="text-gray-200 group-hover:text-white transition-colors">
-            {connected ? 'Rest Beatrice' : 'Awaken Beatrice'}
-          </span>
-        </button>
       </div>
 
       {showPopUp && <PopUp onClose={handleClosePopUp} />}
-    </div>
+    </>
   );
 }

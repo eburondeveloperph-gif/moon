@@ -40,7 +40,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className={c('sidebar', { open: isSidebarOpen })}>
+    <aside className={c('sidebar', 'drawer', 'settings-drawer', { open: isSidebarOpen })}>
       {/* Header */}
       <div className="px-6 py-6 border-b border-white/5 flex items-center justify-between sticky top-0 bg-[#0E1015] z-20">
         <div className="flex items-center gap-3">

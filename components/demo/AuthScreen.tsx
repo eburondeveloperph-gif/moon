@@ -11,6 +11,9 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [signingIn, setSigningIn] = useState(false);
+  const isLocalDevHost =
+    typeof window !== 'undefined' &&
+    ['localhost', '127.0.0.1'].includes(window.location.hostname);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -43,7 +46,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ children }) => {
     );
   }
 
-  if (user) {
+  if (user || isLocalDevHost) {
     return <>{children}</>;
   }
 
