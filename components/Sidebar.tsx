@@ -10,6 +10,8 @@ import { useState } from 'react';
 import ToolEditorModal from './ToolEditorModal';
 import { examplePrompts } from '@/lib/prompts';
 
+import { logout } from '@/lib/firebase';
+
 const AVAILABLE_MODELS = [
   DEFAULT_LIVE_API_MODEL
 ];
@@ -41,10 +43,22 @@ export default function Sidebar() {
     <>
       <aside className={c('sidebar glass', { open: isSidebarOpen })}>
         <div className="sidebar-header">
-          <h2>Voice Hub</h2>
-          <button onClick={toggleSidebar} className="close-button" title="Close sidebar">
-            <span className="material-symbols-outlined">close</span>
-          </button>
+          <div className="sidebar-brand">
+            <div className="auth-status-dot" />
+            <span>Beatrice Hub</span>
+          </div>
+          <div className="sidebar-header-actions">
+            <button 
+              onClick={logout} 
+              className="logout-button" 
+              title="Sign Out"
+            >
+              <span className="material-symbols-outlined">logout</span>
+            </button>
+            <button onClick={toggleSidebar} className="close-button" title="Close sidebar">
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          </div>
         </div>
         <div className="sidebar-content">
           <div className="sidebar-section">

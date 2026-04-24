@@ -296,63 +296,7 @@ export default function StreamingConsole() {
 
   return (
     <div className="transcription-container">
-      {isGeneratingTask && activeCueUrl && (
-        <div className="task-loading-overlay glass">
-          <iframe 
-            src={activeCueUrl} 
-            className="cue-iframe"
-            title="Task Loading Cue"
-          />
-        </div>
-      )}
-      
-      {taskResult && (
-        <div className="task-result-overlay glass">
-          <h3>{taskResult.title}</h3>
-          <p>{taskResult.message}</p>
-          <div className="result-actions">
-            {taskResult.downloadData && (
-              <button 
-                onClick={() => {
-                  if (taskResult.downloadData?.startsWith('http')) {
-                    window.open(taskResult.downloadData, '_blank');
-                  } else {
-                    const blob = new Blob([taskResult.downloadData!], { type: 'text/plain' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = taskResult.downloadFilename || 'result.txt';
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  }
-                }}
-                className="button-primary"
-              >
-                {taskResult.downloadData?.startsWith('http') ? 'View Video' : 'Download Result'}
-              </button>
-            )}
-            <button 
-              onClick={() => setTaskResult(null)}
-              className="button-dismiss"
-            >
-              Dismiss
-            </button>
-          </div>
-        </div>
-      )}
-
       {showPopUp && <PopUp onClose={handleClosePopUp} />}
-
-      <div className="transcription-toolbar glass">
-        <div className="transcription-toolbar-copy">
-          <p className="transcription-toolbar-label">Realtime transcription</p>
-          <h2>Live session feed</h2>
-        </div>
-        <div className={`transcription-status-pill ${connected ? 'connected' : ''}`}>
-          <span className="transcription-status-dot" />
-          {connected ? 'Live' : 'Offline'}
-        </div>
-      </div>
 
       <div className="transcription-live-strip">
         <span className="material-symbols-outlined">graphic_eq</span>

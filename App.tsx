@@ -22,7 +22,6 @@ import ErrorScreen from './components/demo/ErrorScreen';
 import AuthScreen from './components/demo/AuthScreen';
 import StreamingConsole from './components/demo/streaming-console/StreamingConsole';
 
-import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import { LiveAPIProvider } from './contexts/LiveAPIContext';
 
@@ -43,7 +42,6 @@ function App() {
       <AuthScreen>
         <LiveAPIProvider apiKey={API_KEY}>
           <ErrorScreen />
-          <Header />
           <Sidebar />
           <div className="streaming-console">
             <main>
