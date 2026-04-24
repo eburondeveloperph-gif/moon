@@ -154,24 +154,6 @@ body {
   position: relative;
 }
 
-.transcription-view {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 40px;
-  overflow-y: auto;
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
-  mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
-}
-
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  opacity: 0.6;
-}
-
 .transcription-source {
   font-size: 12px;
   font-weight: 600;
@@ -1084,14 +1066,6 @@ form button:first-of-type {
   padding: 40px;
   overflow-y: auto;
 }
-
-  font-size: 17px;
-  line-height: 1.6;
-  position: relative;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-}
-
 .user .transcription-text-content {
   background: var(--bg-surface);
   border: 1px solid var(--border-glass);
@@ -1280,6 +1254,12 @@ button {
   background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0) 70%);
   filter: blur(40px);
   z-index: 0;
+}
+
+.glow-orb-center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 @keyframes pulse-height {

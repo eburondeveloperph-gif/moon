@@ -82,7 +82,16 @@ const renderContent = (text: string) => {
 
 
 export default function StreamingConsole() {
-  const { client, setConfig, connected, connect, disconnect, volume } = useLiveAPIContext();
+  const {
+    client,
+    setConfig,
+    connected,
+    connect,
+    disconnect,
+    volume,
+    speakerMuted,
+    setSpeakerMuted
+  } = useLiveAPIContext();
   const { systemPrompt, voice } = useSettings();
   const { tools, template } = useTools();
   const {
@@ -91,6 +100,7 @@ export default function StreamingConsole() {
     taskResult,
     setTaskResult,
     cameraEnabled,
+    setCameraEnabled,
     cameraPreviewUrl,
     micLevel,
   } = useUI();
@@ -325,18 +335,18 @@ export default function StreamingConsole() {
         </div>
 
         {/* Stat Cards */}
-        <div className="stat-cards">
-          <div className="stat-card">
-            <p className="text-[10px] text-dim uppercase font-semibold tracking-wider mb-1">Mic Input</p>
+        <div className="flex gap-4 shrink-0">
+          <div className="bg-[#181A24] border border-white/5 rounded-xl p-4 w-28">
+            <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider mb-1">Mic Input</p>
             <p className="text-2xl font-bold">{Math.round(micLevel * 100)}%</p>
           </div>
-          <div className="stat-card">
-            <p className="text-[10px] text-dim uppercase font-semibold tracking-wider mb-1">Voice Output</p>
+          <div className="bg-[#181A24] border border-white/5 rounded-xl p-4 w-28">
+            <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider mb-1">Voice Output</p>
             <p className="text-2xl font-bold">{Math.round(volume * 100)}%</p>
           </div>
-          <div className="stat-card">
-            <p className="text-[10px] text-dim uppercase font-semibold tracking-wider mb-1">Session</p>
-            <p className="text-lg font-bold mt-1 text-muted">
+          <div className="bg-[#181A24] border border-white/5 rounded-xl p-4 w-28">
+            <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider mb-1">Session</p>
+            <p className={c("text-lg font-bold mt-1", connected ? "text-blue-400" : "text-gray-500")}>
               {connected ? 'Active' : 'Standby'}
             </p>
           </div>
@@ -345,7 +355,7 @@ export default function StreamingConsole() {
 
       {/* Main Content Area: Status or Transcript */}
       <div className="dashboard-panel dashboard-panel-lg flex-1 relative flex flex-col overflow-hidden">
-        <div className="glow-orb" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}></div>
+        <div className="glow-orb glow-orb-center"></div>
         
         {deferredTurns.length === 0 ? (
           <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center p-8">
@@ -384,17 +394,44 @@ export default function StreamingConsole() {
       </div>
 
       {/* Bottom Control Bar */}
-      <div className="control-bar">
-        <ControlTray />
+      <div className="bg-[#11131A] border border-white/5 rounded-full p-2 flex items-center justify-between mt-auto mx-4 mb-4 shadow-xl">
+        <div className="flex items-center gap-1 pl-2">
+          <button 
+            onClick={() => setSpeakerMuted(!speakerMuted)}
+            className={c("p-3.5 rounded-full transition", speakerMuted ? "text-red-400 bg-red-400/5" : "text-gray-400 hover:bg-white/5 hover:text-white")}
+            title={speakerMuted ? "Unmute Audio" : "Mute Audio"}
+          >
+            <span className="material-symbols-outlined text-xl">{speakerMuted ? 'volume_off' : 'volume_up'}</span>
+          </button>
+          
+          <button 
+            onClick={() => setCameraEnabled(!cameraEnabled)}
+            className={c("p-3.5 rounded-full transition", cameraEnabled ? "text-blue-400 bg-blue-400/5" : "text-gray-400 hover:bg-white/5 hover:text-white")}
+            title={cameraEnabled ? "Stop Camera" : "Start Camera"}
+          >
+            <span className="material-symbols-outlined text-xl">{cameraEnabled ? 'videocam' : 'videocam_off'}</span>
+          </button>
+
+          <button 
+            onClick={useLogStore.getState().clearTurns}
+            className="p-3.5 hover:bg-white/5 rounded-full text-gray-400 hover:text-white transition"
+            title="Reset Session"
+          >
+            <span className="material-symbols-outlined text-xl">refresh</span>
+          </button>
+        </div>
         
         <button 
           onClick={connected ? disconnect : connect}
-          className="flex items-center gap-2 bg-[#1A1C24] hover:bg-[#222530] border border-white/5 px-8 py-3 rounded-full text-sm font-medium transition mr-2"
+          className="flex items-center gap-2 bg-[#1A1C24] hover:bg-[#222530] border border-white/5 px-8 py-3 rounded-full text-sm font-medium transition mr-2 group"
+          title={connected ? "Rest Beatrice" : "Awaken Beatrice"}
         >
-          <span className="material-symbols-outlined text-lg">
+          <span className={c("material-symbols-outlined text-lg transition-colors", connected ? "text-red-400" : "text-blue-400")}>
             {connected ? 'power_settings_new' : 'bolt'}
           </span>
-          {connected ? 'Rest Beatrice' : 'Awaken Beatrice'}
+          <span className="text-gray-200 group-hover:text-white transition-colors">
+            {connected ? 'Rest Beatrice' : 'Awaken Beatrice'}
+          </span>
         </button>
       </div>
 
