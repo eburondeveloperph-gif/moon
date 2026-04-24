@@ -76,6 +76,7 @@ export default function Sidebar() {
             value={template} 
             onChange={(e) => setTemplate(e.target.value as Template)}
             className="w-full bg-[#181A24] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 transition"
+            title="Persona Template"
           />
         </div>
 
@@ -86,6 +87,7 @@ export default function Sidebar() {
             value={systemPrompt}
             onChange={(e) => setSystemPrompt(e.target.value)}
             className="w-full bg-[#181A24] border border-white/10 rounded-lg px-4 py-3 text-sm text-gray-300 h-40 resize-none font-mono focus:outline-none focus:border-blue-500/50 transition leading-relaxed"
+            title="System Instructions"
           />
         </div>
 
@@ -93,13 +95,14 @@ export default function Sidebar() {
         <div className="flex flex-col gap-3">
           <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Presets</label>
           <div className="flex flex-wrap gap-2">
-            {examplePrompts.map((p, i) => (
+            {examplePrompts[template].map((p, i) => (
               <button 
                 key={i}
                 onClick={() => setSystemPrompt(p.prompt)}
                 className="px-4 py-2 rounded-full border border-white/10 text-[11px] text-gray-300 hover:bg-white/5 transition"
+                title={p.title}
               >
-                {p.label}
+                {p.title}
               </button>
             ))}
           </div>
@@ -112,6 +115,7 @@ export default function Sidebar() {
             value={voice}
             onChange={(e) => setVoice(e.target.value)}
             className="w-full bg-[#181A24] border border-white/10 rounded-lg px-4 py-3 text-sm text-white appearance-none focus:outline-none focus:border-blue-500/50 transition cursor-pointer"
+            title="Select Voice"
           >
             <option value="aoede">Aoede</option>
             <option value="calliope">Calliope</option>
@@ -129,17 +133,18 @@ export default function Sidebar() {
                 <div className="flex items-center gap-3">
                   <input 
                     type="checkbox" 
-                    checked={tool.active} 
+                    checked={tool.isEnabled} 
                     onChange={() => toggleTool(tool.name)}
                     className="w-4 h-4 rounded bg-[#2C3B5A] border-none text-blue-500 focus:ring-0 cursor-pointer"
+                    title={`Enable ${tool.name}`}
                   />
-                  <span className="text-sm text-gray-200">{tool.label}</span>
+                  <span className="text-sm text-gray-200">{tool.name.replace(/_/g, ' ')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-gray-500">
-                  <button onClick={() => setEditingTool(tool.config)} className="hover:text-white transition">
+                  <button onClick={() => setEditingTool(tool)} className="hover:text-white transition" title="Edit Service">
                     <span className="material-symbols-outlined text-sm">edit</span>
                   </button>
-                  <button onClick={() => removeTool(tool.name)} className="hover:text-red-400 transition">
+                  <button onClick={() => removeTool(tool.name)} className="hover:text-red-400 transition" title="Delete Service">
                     <span className="material-symbols-outlined text-sm">delete</span>
                   </button>
                 </div>

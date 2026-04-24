@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
+import c from 'clsx';
 import PopUp from '../popup/PopUp';
 import AudioVisualizer from './AudioVisualizer';
 import ControlTray from '../../console/control-tray/ControlTray';
@@ -81,7 +82,7 @@ const renderContent = (text: string) => {
 
 
 export default function StreamingConsole() {
-  const { client, setConfig, connected, connect, disconnect } = useLiveAPIContext();
+  const { client, setConfig, connected, connect, disconnect, volume } = useLiveAPIContext();
   const { systemPrompt, voice } = useSettings();
   const { tools, template } = useTools();
   const {
@@ -91,6 +92,7 @@ export default function StreamingConsole() {
     setTaskResult,
     cameraEnabled,
     cameraPreviewUrl,
+    micLevel,
   } = useUI();
   const turns = useLogStore(state => state.turns);
   const deferredTurns = useDeferredValue(turns);
