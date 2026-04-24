@@ -2195,32 +2195,47 @@ main {
 }
 
 .console-control-dock {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 100;
-  padding: 24px 32px;
+  z-index: 1000;
+  padding: 40px 32px;
   pointer-events: none;
-  background: linear-gradient(to top, var(--bg-base) 0%, transparent 100%);
+  display: flex;
+  justify-content: center;
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(to top, var(--bg-deep) 30%, transparent 100%);
+}
+
+body:has(.sidebar.open) .console-control-dock {
+  right: var(--sidebar-width);
+}
+
+@media (max-width: 1024px) {
+  body:has(.sidebar.open) .console-control-dock {
+    right: 0;
+  }
 }
 
 .console-control-dock .control-tray {
   position: relative;
-  max-width: 800px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 820px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(20, 21, 25, 0.75);
-  padding: 14px 24px;
-  border-radius: 24px;
+  gap: 24px;
+  border: 1px solid var(--border-glass);
+  background: rgba(15, 15, 20, 0.7);
+  padding: 16px 28px;
+  border-radius: 28px;
   pointer-events: auto;
-  -webkit-backdrop-filter: blur(28px);
-  backdrop-filter: blur(28px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(32px);
+  backdrop-filter: blur(32px);
+  box-shadow: 
+    0 24px 60px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .console-control-dock .actions-nav {
