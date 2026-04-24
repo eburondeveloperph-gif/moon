@@ -295,96 +295,81 @@ export default function StreamingConsole() {
         : 'Press play to start live transcription.';
 
   return (
-    <div className="transcription-container">
-      {showPopUp && <PopUp onClose={handleClosePopUp} />}
-
-      <div className="transcription-live-strip">
-        <span className="material-symbols-outlined">graphic_eq</span>
-        <p>{liveTranscript}</p>
+    <div className="flex-1 flex flex-col gap-6">
+      {/* Live Transcription Bar */}
+      <div className="dashboard-panel p-4 flex items-center gap-4">
+        <span className="material-symbols-outlined text-dim">graphic_eq</span>
+        <p className="text-sm text-muted font-medium">{liveTranscript}</p>
       </div>
 
-      <AudioVisualizer />
+      {/* Audio Dashboard Panel */}
+      <div className="dashboard-panel dashboard-panel-lg audio-dashboard">
+        {/* Play/Pause Toggle */}
+        <button 
+          onClick={connected ? disconnect : connect}
+          className={c("w-20 h-20 rounded-full flex items-center justify-center shrink-0 border transition shadow-lg", {
+            "bg-button border-blue-400/30 hover:bg-button-hover": !connected,
+            "bg-red-900/20 border-red-500/30 hover:bg-red-900/40": connected
+          })}
+        >
+          <span className="material-symbols-outlined text-3xl" style={{ color: connected ? '#ff3366' : '#3b82f6' }}>
+            {connected ? 'stop' : 'play_arrow'}
+          </span>
+        </button>
 
-      {cameraEnabled && (
-        <section className="camera-preview-panel glass">
-          <div className="camera-preview-header">
-            <div>
-              <p className="camera-preview-label">Video Camera Web SDK</p>
-              <h3>Live camera feed</h3>
-            </div>
-            <div className={`transcription-status-pill ${connected ? 'connected' : ''}`}>
-              <span className="transcription-status-dot" />
-              {connected ? 'Streaming to Gemini' : 'Preview only'}
-            </div>
-          </div>
-          <div className="camera-preview-frame">
-            {cameraPreviewUrl ? (
-              <img src={cameraPreviewUrl} alt="Camera preview" className="camera-preview-image" />
-            ) : (
-              <div className="camera-preview-placeholder">
-                <span className="material-symbols-outlined">videocam</span>
-                <p>Starting camera preview…</p>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {deferredTurns.length === 0 ? (
-        <div className="empty-state-message">
-          <div className="pulsing-orb"></div>
-          <p className="status-text">Beatrice is listening</p>
-          <p className="hint-text">Speak with confidence, Boss Joe. I am here for you.</p>
+        {/* Visualizer Placeholder */}
+        <div className="flex-1 flex items-center gap-1.5 h-12 px-6">
+          <AudioVisualizer />
         </div>
-      ) : (
-        <div className="transcription-view" ref={scrollRef} onScroll={handleTranscriptScroll}>
-          {deferredTurns.map((t, i) => (
-            <div
-              key={i}
-              className={`transcription-entry ${t.role} ${!t.isFinal ? 'interim' : ''}`}
-            >
-              <div className="transcription-meta">
-                <div className="transcription-header">
-                  <div className="transcription-source">
-                    {t.role === 'user' ? 'Boss Joe' : t.role === 'agent' ? 'Beatrice' : 'System'}
-                  </div>
-                  <div className="transcription-timestamp">
-                    {formatTimestamp(t.timestamp)}
-                  </div>
-                </div>
-                {!t.isFinal && <span className="transcription-live-pill">Live</span>}
-              </div>
-              <div className="transcription-text-content">
-                {renderContent(t.text)}
-              </div>
-              {t.groundingChunks && t.groundingChunks.length > 0 && (
-                <div className="grounding-chunks">
-                  <strong>Sources:</strong>
-                  <ul>
-                    {t.groundingChunks
-                      .filter(chunk => chunk.web)
-                      .map((chunk, index) => (
-                        <li key={index}>
-                          <a
-                            href={chunk.web!.uri}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {chunk.web!.title || chunk.web!.uri}
-                          </a>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
 
-      <div className="console-control-dock">
+        {/* Stat Cards */}
+        <div className="stat-cards">
+          <div className="stat-card">
+            <p className="text-[10px] text-dim uppercase font-semibold tracking-wider mb-1">Mic Input</p>
+            <p className="text-2xl font-bold">{Math.round(micLevel * 100)}%</p>
+          </div>
+          <div className="stat-card">
+            <p className="text-[10px] text-dim uppercase font-semibold tracking-wider mb-1">Voice Output</p>
+            <p className="text-2xl font-bold">{Math.round(volume * 100)}%</p>
+          </div>
+          <div className="stat-card">
+            <p className="text-[10px] text-dim uppercase font-semibold tracking-wider mb-1">Session</p>
+            <p className="text-lg font-bold mt-1 text-muted">
+              {connected ? 'Active' : 'Standby'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Listening Status Area */}
+      <div className="dashboard-panel dashboard-panel-lg flex-1 relative flex flex-col items-center justify-center overflow-hidden">
+        <div className="glow-orb"></div>
+        <div className="relative z-10 text-center">
+          <h1 className="text-4xl font-semibold mb-3 tracking-tight">
+            {connected ? 'Beatrice is listening' : 'Beatrice is resting'}
+          </h1>
+          <p className="text-muted">
+            {connected ? 'Speak with confidence, Boss Joe. I am here for you.' : 'Press play to awaken Beatrice.'}
+          </p>
+        </div>
+      </div>
+
+      {/* Bottom Control Bar */}
+      <div className="control-bar">
         <ControlTray />
+        
+        <button 
+          onClick={connected ? disconnect : connect}
+          className="flex items-center gap-2 bg-[#1A1C24] hover:bg-[#222530] border border-white/5 px-8 py-3 rounded-full text-sm font-medium transition mr-2"
+        >
+          <span className="material-symbols-outlined text-lg">
+            {connected ? 'power_settings_new' : 'bolt'}
+          </span>
+          {connected ? 'Rest Beatrice' : 'Awaken Beatrice'}
+        </button>
       </div>
+
+      {showPopUp && <PopUp onClose={handleClosePopUp} />}
     </div>
   );
 }

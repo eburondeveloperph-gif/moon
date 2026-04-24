@@ -33,49 +33,19 @@ export default function AudioVisualizer() {
   );
 
   return (
-    <section className="audio-visualizer-panel glass" aria-label="Audio visualizer">
-      <div className="audio-visualizer-stage">
-        <div className="audio-orb-shell">
-          <div
-            className={`audio-orb-core ${connected ? 'connected' : ''}`}
-            style={{ '--orb-scale': `${0.92 + energy * 0.5}` } as CSSProperties}
-          >
-            <span className="material-symbols-outlined">graphic_eq</span>
-          </div>
-          <div className="audio-orb-ring audio-orb-ring-inner" />
-          <div className="audio-orb-ring audio-orb-ring-outer" />
-        </div>
-
-        <div className="audio-bars" aria-hidden="true">
-          {bars.map(bar => (
-            <span
-              key={bar.id}
-              className="audio-bar"
-              style={
-                {
-                  '--bar-height': `${18 + bar.height * 82}px`,
-                  '--bar-delay': bar.delay,
-                } as CSSProperties
-              }
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="audio-visualizer-meta">
-        <div className="audio-channel-card">
-          <span className="audio-channel-label">Mic Input</span>
-          <strong>{Math.round(inputLevel * 100)}%</strong>
-        </div>
-        <div className="audio-channel-card">
-          <span className="audio-channel-label">Voice Output</span>
-          <strong>{Math.round(outputLevel * 100)}%</strong>
-        </div>
-        <div className="audio-channel-card audio-channel-card-status">
-          <span className="audio-channel-label">Session</span>
-          <strong>{connected ? 'Connected' : 'Standby'}</strong>
-        </div>
-      </div>
-    </section>
+    <div className="flex-1 flex items-center gap-1.5 h-12 px-6 overflow-hidden">
+      {bars.map(bar => (
+        <div 
+          key={bar.id}
+          className="w-1.5 bg-dim rounded-full bar-anim"
+          style={{ 
+            height: `${20 + bar.height * 80}%`, 
+            animationDelay: `-${Math.random() * 1.5}s`,
+            background: connected ? '#3b82f6' : '#64748b',
+            opacity: connected ? 0.8 : 0.4
+          } as CSSProperties}
+        />
+      ))}
+    </div>
   );
 }

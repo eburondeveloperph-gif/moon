@@ -40,137 +40,131 @@ export default function Sidebar() {
   };
 
   return (
-    <>
-      <aside className={c('sidebar glass', { open: isSidebarOpen })}>
-        <div className="sidebar-header">
-          <div className="sidebar-brand">
-            <div className="auth-status-dot" />
-            <span>Beatrice Hub</span>
-          </div>
-          <div className="sidebar-header-actions">
-            <button 
-              onClick={logout} 
-              className="logout-button" 
-              title="Sign Out"
-            >
-              <span className="material-symbols-outlined">logout</span>
-            </button>
-            <button onClick={toggleSidebar} className="close-button" title="Close sidebar">
-              <span className="material-symbols-outlined">close</span>
-            </button>
+    <aside className={c('sidebar', { open: isSidebarOpen })}>
+      {/* Header */}
+      <div className="px-6 py-6 border-b border-white/5 flex items-center justify-between sticky top-0 bg-[#0E1015] z-20">
+        <div className="flex items-center gap-3">
+          <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
+          <h2 className="font-medium text-lg text-white">Beatrice Hub</h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={logout}
+            className="p-2 border border-white/10 rounded-full hover:bg-white/5 text-gray-400 transition"
+            title="Sign Out"
+          >
+            <span className="material-symbols-outlined text-sm">logout</span>
+          </button>
+          <button 
+            onClick={toggleSidebar}
+            className="p-2 border border-white/10 rounded-full hover:bg-white/5 text-gray-400 transition"
+            title="Close Sidebar"
+          >
+            <span className="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Sidebar Content */}
+      <div className="p-6 flex flex-col gap-8">
+        
+        {/* Persona Template */}
+        <div className="flex flex-col gap-2">
+          <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Persona Template</label>
+          <input 
+            type="text" 
+            value={template} 
+            onChange={(e) => setTemplate(e.target.value as Template)}
+            className="w-full bg-[#181A24] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 transition"
+          />
+        </div>
+
+        {/* Active Instruction Overlay */}
+        <div className="flex flex-col gap-2">
+          <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Active Instruction Overlay</label>
+          <textarea 
+            value={systemPrompt}
+            onChange={(e) => setSystemPrompt(e.target.value)}
+            className="w-full bg-[#181A24] border border-white/10 rounded-lg px-4 py-3 text-sm text-gray-300 h-40 resize-none font-mono focus:outline-none focus:border-blue-500/50 transition leading-relaxed"
+          />
+        </div>
+
+        {/* Presets */}
+        <div className="flex flex-col gap-3">
+          <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Presets</label>
+          <div className="flex flex-wrap gap-2">
+            {examplePrompts.map((p, i) => (
+              <button 
+                key={i}
+                onClick={() => setSystemPrompt(p.prompt)}
+                className="px-4 py-2 rounded-full border border-white/10 text-[11px] text-gray-300 hover:bg-white/5 transition"
+              >
+                {p.label}
+              </button>
+            ))}
           </div>
         </div>
-        <div className="sidebar-content">
-          <div className="sidebar-section">
-            <fieldset disabled={connected}>
-              <div className="input-group">
-                <label>Persona Template</label>
-                <select
-                  value={template}
-                  onChange={e => setTemplate(e.target.value as Template)}
-                  title="Persona Template"
-                >
-                  {TEMPLATES.map(t => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
 
-              <div className="input-group">
-                <label>Active Instruction Overlay</label>
-                <textarea
-                  value={systemPrompt}
-                  onChange={e => setSystemPrompt(e.target.value)}
-                  rows={6}
-                  placeholder="The agent's current mission..."
-                  title="System Prompt"
-                />
-              </div>
+        {/* Voice Persona */}
+        <div className="flex flex-col gap-2">
+          <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Voice Persona</label>
+          <select 
+            value={voice}
+            onChange={(e) => setVoice(e.target.value)}
+            className="w-full bg-[#181A24] border border-white/10 rounded-lg px-4 py-3 text-sm text-white appearance-none focus:outline-none focus:border-blue-500/50 transition cursor-pointer"
+          >
+            <option value="aoede">Aoede</option>
+            <option value="calliope">Calliope</option>
+            <option value="clio">Clio</option>
+          </select>
+        </div>
 
-              <div className="example-prompts">
-                <p className="example-prompts-title">Presets</p>
-                <div className="example-prompts-list">
-                  {examplePrompts[template].map((example, i) => (
-                    <button
-                      key={i}
-                      className="example-prompt-chip"
-                      onClick={() => setSystemPrompt(example.prompt)}
-                      title={example.title}
-                    >
-                      {example.title}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="input-group">
-                <label>Voice Persona</label>
-                <select 
-                  value={voice} 
-                  onChange={e => setVoice(e.target.value)}
-                  title="Voice Selection"
-                >
-                  {AVAILABLE_VOICES.map(v => (
-                    <option key={v} value={v}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </fieldset>
-          </div>
+        {/* Integrated Services */}
+        <div className="flex flex-col gap-3">
+          <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Integrated Services</label>
           
-          <div className="sidebar-section">
-            <h4 className="sidebar-section-title">Integrated Services</h4>
-            <div className="tools-list">
-              {tools.map(tool => (
-                <div key={tool.name} className="tool-item">
-                  <label className="tool-checkbox-wrapper">
-                    <input
-                      type="checkbox"
-                      id={`tool-checkbox-${tool.name}`}
-                      checked={tool.isEnabled}
-                      onChange={() => toggleTool(tool.name)}
-                      disabled={connected}
-                    />
-                    <span className="checkbox-visual"></span>
-                  </label>
-                  <label
-                    htmlFor={`tool-checkbox-${tool.name}`}
-                    className="tool-name-text"
-                  >
-                    {tool.name.replace(/_/g, ' ')}
-                  </label>
-                  <div className="tool-actions">
-                    <button onClick={() => setEditingTool(tool)} disabled={connected} title="Edit tool">
-                      <span className="material-symbols-outlined">edit</span>
-                    </button>
-                    <button onClick={() => removeTool(tool.name)} disabled={connected} title="Remove tool">
-                      <span className="material-symbols-outlined">delete</span>
-                    </button>
-                  </div>
+          <div className="flex flex-col gap-2">
+            {tools.map((tool) => (
+              <div key={tool.name} className="flex items-center justify-between bg-[#181A24] border border-white/10 rounded-lg px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="checkbox" 
+                    checked={tool.active} 
+                    onChange={() => toggleTool(tool.name)}
+                    className="w-4 h-4 rounded bg-[#2C3B5A] border-none text-blue-500 focus:ring-0 cursor-pointer"
+                  />
+                  <span className="text-sm text-gray-200">{tool.label}</span>
                 </div>
-              ))}
-            </div>
-            <button
-              onClick={addTool}
-              className="add-tool-button"
-              disabled={connected}
+                <div className="flex items-center gap-3 text-gray-500">
+                  <button onClick={() => setEditingTool(tool.config)} className="hover:text-white transition">
+                    <span className="material-symbols-outlined text-sm">edit</span>
+                  </button>
+                  <button onClick={() => removeTool(tool.name)} className="hover:text-red-400 transition">
+                    <span className="material-symbols-outlined text-sm">delete</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+            
+            <button 
+              onClick={() => addTool()}
+              className="add-tool-button mt-2"
             >
-              <span className="material-symbols-outlined">add</span> Define New Capability
+              <span className="material-symbols-outlined">add</span>
+              Add Custom Service
             </button>
           </div>
         </div>
-      </aside>
+
+      </div>
+
       {editingTool && (
         <ToolEditorModal
           tool={editingTool}
-          onClose={() => setEditingTool(null)}
           onSave={handleSaveTool}
+          onClose={() => setEditingTool(null)}
         />
       )}
-    </>
+    </aside>
   );
 }

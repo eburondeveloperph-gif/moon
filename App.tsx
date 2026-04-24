@@ -42,14 +42,10 @@ function App() {
       <AuthScreen>
         <LiveAPIProvider apiKey={API_KEY}>
           <ErrorScreen />
+          <main className="main-dashboard">
+            <StreamingConsole />
+          </main>
           <Sidebar />
-          <div className="streaming-console">
-            <main>
-              <div className="main-app-area">
-                <StreamingConsole />
-              </div>
-            </main>
-          </div>
         </LiveAPIProvider>
       </AuthScreen>
     </div>
