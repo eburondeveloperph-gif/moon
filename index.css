@@ -52,6 +52,7 @@
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  -ms-overflow-style: -ms-autohiding-scrollbar; /* IE/Edge */
 }
 
 ::-webkit-scrollbar {
