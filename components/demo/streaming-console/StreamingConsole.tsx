@@ -81,7 +81,7 @@ const renderContent = (text: string) => {
 
 
 export default function StreamingConsole() {
-  const { client, setConfig, connected } = useLiveAPIContext();
+  const { client, setConfig, connected, connect, disconnect } = useLiveAPIContext();
   const { systemPrompt, voice } = useSettings();
   const { tools, template } = useTools();
   const {
