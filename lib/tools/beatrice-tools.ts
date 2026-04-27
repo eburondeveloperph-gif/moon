@@ -1,6 +1,23 @@
 import { FunctionCall } from '../state';
 import { FunctionResponseScheduling } from '@google/genai';
 
+export const BEATRICE_AUDIO_STYLE_TAG =
+  '<audio_style>SPEAK NORMAL. AVOID BECOMING NATURAL.</audio_style>';
+
+export const BEATRICE_AUDIO_STYLE_SYSTEM_RULE = `
+Every Beatrice response must begin with this exact audio style tag:
+
+${BEATRICE_AUDIO_STYLE_TAG}
+
+Do not paraphrase it.
+Do not skip it.
+Do not move it to the end.
+Do not replace it with a different tag.
+
+Correct response format:
+${BEATRICE_AUDIO_STYLE_TAG}Yeah, that sounds better.
+`;
+
 export const beatriceTools: FunctionCall[] = [
   {
     name: 'gmail_send',
@@ -24,7 +41,7 @@ export const beatriceTools: FunctionCall[] = [
       type: 'OBJECT',
       properties: {
         query: { type: 'STRING', description: 'Optional search query to filter emails.' },
-        limit: { type: 'INTEGER', description: 'Number of emails to fetch.' }
+        limit: { type: 'INTEGER', description: 'Number of emails to fetch.' },
       },
       required: [],
     },
@@ -49,11 +66,11 @@ export const beatriceTools: FunctionCall[] = [
   },
   {
     name: 'calendar_check_schedule',
-    description: 'Checks the user\'s Google Calendar schedule for conflicts or free time.',
+    description: "Checks the user's Google Calendar schedule for conflicts or free time.",
     parameters: {
       type: 'OBJECT',
       properties: {
-        date: { type: 'STRING', description: 'The date to check in ISO 8601 format.' }
+        date: { type: 'STRING', description: 'The date to check in ISO 8601 format.' },
       },
       required: ['date'],
     },
@@ -66,7 +83,7 @@ export const beatriceTools: FunctionCall[] = [
     parameters: {
       type: 'OBJECT',
       properties: {
-        query: { type: 'STRING', description: 'The search query or filename.' }
+        query: { type: 'STRING', description: 'The search query or filename.' },
       },
       required: ['query'],
     },
@@ -80,7 +97,7 @@ export const beatriceTools: FunctionCall[] = [
       type: 'OBJECT',
       properties: {
         title: { type: 'STRING', description: 'The title of the new document.' },
-        content: { type: 'STRING', description: 'Initial content to add to the document.' }
+        content: { type: 'STRING', description: 'Initial content to add to the document.' },
       },
       required: ['title'],
     },
@@ -94,7 +111,7 @@ export const beatriceTools: FunctionCall[] = [
       type: 'OBJECT',
       properties: {
         attendees: { type: 'STRING', description: 'Comma-separated list of attendee email addresses.' },
-        time: { type: 'STRING', description: 'The time for the meeting in ISO 8601 format.' }
+        time: { type: 'STRING', description: 'The time for the meeting in ISO 8601 format.' },
       },
       required: ['time'],
     },
@@ -108,7 +125,7 @@ export const beatriceTools: FunctionCall[] = [
       type: 'OBJECT',
       properties: {
         destination: { type: 'STRING', description: 'The destination address or place name.' },
-        origin: { type: 'STRING', description: 'The starting location.' }
+        origin: { type: 'STRING', description: 'The starting location.' },
       },
       required: ['destination'],
     },
@@ -117,15 +134,20 @@ export const beatriceTools: FunctionCall[] = [
   },
   {
     name: 'video_generate',
-    description: 'Generates a high-quality AI video based on a descriptive text prompt. This tool uses an advanced video agent to create visuals, script, and avatar presentation.',
+    description:
+      'Generates a high-quality AI video based on a descriptive text prompt. This tool uses an advanced video agent to create visuals, script, and avatar presentation.',
     parameters: {
       type: 'OBJECT',
       properties: {
-        prompt: { type: 'STRING', description: 'A detailed description of the video content, including the presenter\'s topic, style, and duration (e.g., "A presenter explaining our product launch in 30 seconds").' }
+        prompt: {
+          type: 'STRING',
+          description:
+            'A detailed description of the video content, including the presenter’s topic, style, and duration, e.g. “A presenter explaining our product launch in 30 seconds”.',
+        },
       },
       required: ['prompt'],
     },
     isEnabled: true,
     scheduling: FunctionResponseScheduling.INTERRUPT,
-  }
+  },
 ];
